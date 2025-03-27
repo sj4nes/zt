@@ -1,6 +1,7 @@
 // Package dhg provides a directed hypergraph implementation.
 package dhg
 
+import "gopkg.in/yaml.v2"
 import "strconv"
 
 const (
@@ -35,27 +36,28 @@ const (
 // 󰴣 = {( , )}
 // 󱗜 = {(󰴷,󰴶)}
 
+// Element is a common interface for all elements in a graph
 type Element interface {
 	element()
 }
 
 type Edge struct {
-	Value *Datum
-	Rels  *Vertices
+	Value *Datum    `yaml:"value"`
+	Rels  *Vertices `yaml:"rels"`
 }
 
 func (*Edge) element() {}
 
 type Vertex struct {
-	Value *Datum
-	Rels  *Edges
+	Value *Datum `yaml:"value"`
+	Rels  *Edges `yaml:"rels"`
 }
 
 func (*Vertex) element() {}
 
 type Rel struct {
-	Head *Element
-	Tail *Element
+	Head *Element `yaml:"head"`
+	Tail *Element `yaml:"tail"`
 }
 
 type Rels []Rel
@@ -64,9 +66,13 @@ type Vertices []Vertex
 type Edges []Edge
 
 type Graph struct {
-	Value    *Datum
-	Vertices *Vertices
-	Edges    *Edges
+	Value    *Datum    `yaml:"value"`
+	Vertices *Vertices `yaml:"vertices"`
+	Edges    *Edges    `yaml:"edges"`
+}
+
+func (g Graph) ToYAML() ([]byte, error) {
+	return yaml.Marshal(g)
 }
 
 func (d *Graph) Fmt() string {
@@ -161,6 +167,8 @@ func (*EdgeDatum) Fmt() string {
 	return EDGE_SYMBOL + " " + "TODO"
 }
 
+// Fmt returns a formatted string for the provided datum. Probably a ridululous
+// generic since there is already an interface. :)
 func Fmt[T Datum](d T) string {
 	return d.Fmt()
 }
