@@ -1,7 +1,9 @@
 package cats
 
+import "errors"
 import "io/ioutil"
 import "log"
+import "os"
 import "strings"
 
 // Fmt returns a formatted string for the provided category.
@@ -28,4 +30,28 @@ func Find(dir string) []string {
 	}
 
 	return cats
+}
+
+// Define creates a category in the provided directory.
+func Define(dir string, cat string) (*string, error) {
+	// If the category already exists, do nothing.
+	exists, err := os.Stat(dir + "/" + cat)
+	if err == nil && exists.IsDir() {
+		return nil, errors.New("category exists")
+	}
+	// If the category does not exist, create it.
+	err = os.Mkdir(dir+"/"+cat, 0755)
+	if err != nil {
+		return nil, err
+	}
+	return &cat, nil
+}
+
+// Undefine deletes a category in the provided directory.
+func Undefine(dir string, cat string) error {
+	err := os.Remove(dir + "/" + cat)
+	if err != nil {
+		return err
+	}
+	return nil
 }
