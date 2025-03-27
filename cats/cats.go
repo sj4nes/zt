@@ -6,6 +6,14 @@ import "log"
 import "os"
 import "strings"
 
+type Category struct {
+	Name string
+}
+
+func (c *Category) Fmt() string {
+	return "\u23fa " + c.Name
+}
+
 // Fmt returns a formatted string for the provided category.
 func Fmt(cat string) string {
 	return "\u23fa " + cat
@@ -64,4 +72,3 @@ func Arrow(from string, to string) error {
 	}
 	return nil
 }
-
