@@ -49,9 +49,19 @@ func Define(dir string, cat string) (*string, error) {
 
 // Undefine deletes a category in the provided directory.
 func Undefine(dir string, cat string) error {
-	err := os.Remove(dir + "/" + cat)
+	err := os.Remove(dir + "/" + cat + "/=A")
 	if err != nil {
 		return err
 	}
 	return nil
 }
+
+// Arrow connects two categories by creating a subdirectory in the source category.
+func Arrow(from string, to string) error {
+	err := os.MkdirAll(from+"/"+to+"/=A", 0755)
+	if err != nil {
+		return err
+	}
+	return nil
+}
+
