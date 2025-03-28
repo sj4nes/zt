@@ -1,7 +1,10 @@
 package dhg
 
+import "os"
+import "io/ioutil"
 import "testing"
 import "github.com/gkampitakis/go-snaps/snaps"
+import "github.com/stretchr/testify/assert"
 
 func TestZeroGraph(t *testing.T) {
 	g := &Graph{}
@@ -58,4 +61,50 @@ func TestGraphAddVertex(t *testing.T) {
 	if g.Vertices != nil && (*g.Vertices)[0] != *v {
 		t.Errorf("unexpected vertex: %v", (*g.Vertices)[0])
 	}
+}
+
+func TestGraphSaveYAML(t *testing.T) {
+	g := graphFixture()
+	err := g.SaveYAML("test.yaml")
+	if err != nil {
+		t.Errorf("unexpected error: %v", err)
+	}
+	defer func() {
+		err := os.Remove("test.yaml")
+		if err != nil {
+			t.Errorf("unexpected error: %v", err)
+		}
+	}()
+	y, err := ioutil.ReadFile("test.yaml")
+	if err != nil {
+		t.Errorf("unexpected error: %v", err)
+	}
+	snaps.MatchYAML(t, y)
+}
+
+func TestLoadGraphYAML(t *testing.T) {
+	g := graphFixture()
+	err := g.SaveYAML("test.yaml")
+	if err != nil {
+		t.Errorf("unexpected error: %v", err)
+	}
+	defer func() {
+		err := os.Remove("test.yaml")
+		if err != nil {
+			t.Errorf("unexpected error: %v", err)
+		}
+	}()
+	g2, err := LoadGraphYAML("test.yaml")
+	if err != nil {
+		t.Errorf("unexpected error: %v", err)
+	}
+	y1, err := g.ToYAML()
+	if err != nil {
+		t.Errorf("unexpected error: %v", err)
+	}
+	y2, err := g2.ToYAML()
+	if err != nil {
+		t.Errorf("unexpected error: %v", err)
+	}
+	assert.Equal(t, y1, y2)
 }

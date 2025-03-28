@@ -1,13 +1,16 @@
 // Package dhg provides a directed hypergraph implementation.
 package dhg
 
-import "gopkg.in/yaml.v2"
-import "strconv"
-import "sync"
-import "math/rand"
-import "time"
-import "os"
-import . "zt/quality"
+import (
+	"gopkg.in/yaml.v2"
+	"io/ioutil"
+	"math/rand"
+	"os"
+	"strconv"
+	"sync"
+	"time"
+	. "zt/quality"
+)
 
 const (
 	// EDGE_SYMBOL        = "\u2ad8"     // ⫘
@@ -260,4 +263,29 @@ func (*EdgeDatum) Fmt() string {
 // generic since there is already an interface. :)
 func Fmt[T Datum](d T) string {
 	return d.Fmt()
+}
+
+func (g *Graph) SaveYAML(filename string) error {
+	data, err := g.ToYAML()
+	if err != nil {
+		return err
+	}
+	err = os.WriteFile(filename, data, 0644)
+	if err != nil {
+		return err
+	}
+	return nil
+}
+
+func LoadGraphYAML(filename string) (*Graph, error) {
+	y, err := ioutil.ReadFile(filename)
+	if err != nil {
+		return nil, err
+	}
+	g := &Graph{}
+	err = yaml.Unmarshal(y, &g)
+	if err != nil {
+		return nil, err
+	}
+	return g, nil
 }

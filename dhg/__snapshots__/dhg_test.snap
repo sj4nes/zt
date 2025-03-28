@@ -11,3 +11,16 @@ edges:
 - id: "16_7"
 
 ---
+
+[TestGraphSaveYAML - 1]
+id: 16_b
+vertices:
+- id: 16_c
+- id: 16_d
+- id: 16_e
+edges:
+- id: 16_f
+- id: 16_g
+- id: 16_h
+
+---
