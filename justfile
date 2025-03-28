@@ -17,7 +17,7 @@ run: fmt
   go run zt.go
 
 wat:
-  watchexec -e go -r just test
+  watchexec -e go -r 'clear;just test'
  
 relwat:
-  watchexec -e go -r just reltest
+  watchexec -e go -r 'clear;just reltest'
