@@ -107,14 +107,33 @@ type Rels []Rel
 
 type Vertices []Vertex
 
+func NewVertices() *Vertices {
+	v := Vertices{}
+	return &v
+}
+
 func (v *Vertices) Add(vs ...Vertex) {
 	*v = append(*v, vs...)
 }
+
 func (v *Vertices) Len() int {
 	return len(*v)
 }
 
 type Edges []Edge
+
+func NewEdges() *Edges {
+	v := Edges{}
+	return &v
+}
+
+func (e *Edges) Add(es ...Edge) {
+	*e = append(*e, es...)
+}
+
+func (e *Edges) Len() int {
+	return len(*e)
+}
 
 type Graph struct {
 	Id       string    `yaml:"id"`
@@ -133,9 +152,16 @@ func (g Graph) ToYAML() ([]byte, error) {
 
 func (g *Graph) AddVertex(v *Vertex) {
 	if g.Vertices == nil {
-		g.Vertices = &Vertices{}
+		g.Vertices = NewVertices()
 	}
-	*g.Vertices = append(*g.Vertices, *v)
+	g.Vertices.Add(*v)
+}
+
+func (g *Graph) AddEdge(e *Edge) {
+	if g.Edges == nil {
+		g.Edges = NewEdges()
+	}
+	g.Edges.Add(*e)
 }
 
 func (d *Graph) Fmt() string {

@@ -24,3 +24,6 @@ wat:
  
 relwat:
   watchexec -e go -r 'clear;just reltest'
+
+snaps:
+ DEBUG=1 UPDATE_SNAPS=true go test ./... 

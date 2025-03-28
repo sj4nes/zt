@@ -19,7 +19,7 @@ func TestGraphToYAML(t *testing.T) {
 	if err != nil {
 		t.Errorf("unexpected error: %v", err)
 	}
-	snaps.MatchSnapshot(t, y)
+	snaps.MatchYAML(t, y)
 }
 
 func TestGraphFmt(t *testing.T) {
@@ -37,6 +37,12 @@ func graphFixture() *Graph {
 	g.AddVertex(v1)
 	g.AddVertex(v2)
 	g.AddVertex(v3)
+	e1 := NewEdge()
+	e2 := NewEdge()
+	e3 := NewEdge()
+	g.AddEdge(e1)
+	g.AddEdge(e2)
+	g.AddEdge(e3)
 	return g
 }
 
