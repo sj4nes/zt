@@ -3,6 +3,11 @@ package dhg
 
 import "gopkg.in/yaml.v2"
 import "strconv"
+import "sync"
+import "math/rand"
+import "time"
+import "os"
+import . "zt/quality"
 
 const (
 	// EDGE_SYMBOL        = "\u2ad8"     // ⫘
@@ -30,6 +35,34 @@ const (
 	VERTEX_SYMBOL      = "\U000f15dc" // 󱗜 (a point in an area) = {(󰴷,󰴶)} ?
 )
 
+var LAST_ID_MX sync.Mutex
+var LAST_SERIAL_ID int64 = 0
+var RNGSRC *rand.Rand
+
+func init() {
+	RNGSRC = rand.New(rand.NewSource(time.Now().UnixNano()))
+	if os.Getenv("DEBUG") == "1" {
+		RNGSRC = rand.New(rand.NewSource(42))
+		x := RNGSRC.Intn(30)
+		Assert(x == 5, "static random seed is not set correctly: "+strconv.Itoa(x))
+	}
+}
+
+// NextId generates a new unique ID for graph elements.
+func NextId() string {
+	LAST_ID_MX.Lock()
+	defer LAST_ID_MX.Unlock()
+	LAST_SERIAL_ID++
+	conv := strconv.FormatInt(LAST_SERIAL_ID, 36)
+	// Randomize part of the id to avoid collisions
+	r := RNGSRC.Intn(1e9)
+	if os.Getenv("DEBUG") == "1" {
+		r = 42 // For testing
+	}
+	nonce := strconv.FormatInt(int64(r), 36)
+	return nonce + "_" + conv
+}
+
 //  U+f0a9 Arrow circle right
 //  U+f0a8 Arrow circle left
 // 󱡓 U+f1853 Circle opacity
@@ -42,15 +75,25 @@ type Element interface {
 }
 
 type Edge struct {
+	Id    string    `yaml:"id"`
 	Value *Datum    `yaml:"value"`
 	Rels  *Vertices `yaml:"rels"`
+}
+
+func NewEdge() *Edge {
+	return &Edge{Id: NextId()}
 }
 
 func (*Edge) element() {}
 
 type Vertex struct {
+	Id    string `yaml:"id"`
 	Value *Datum `yaml:"value"`
 	Rels  *Edges `yaml:"rels"`
+}
+
+func NewVertex() *Vertex {
+	return &Vertex{Id: NextId()}
 }
 
 func (*Vertex) element() {}
@@ -66,13 +109,25 @@ type Vertices []Vertex
 type Edges []Edge
 
 type Graph struct {
+	Id       string    `yaml:"id"`
 	Value    *Datum    `yaml:"value"`
 	Vertices *Vertices `yaml:"vertices"`
 	Edges    *Edges    `yaml:"edges"`
 }
 
+func NewGraph() *Graph {
+	return &Graph{Id: NextId()}
+}
+
 func (g Graph) ToYAML() ([]byte, error) {
 	return yaml.Marshal(g)
+}
+
+func (g Graph) AddVertex(v *Vertex) {
+	if g.Vertices == nil {
+		g.Vertices = &Vertices{}
+	}
+	*g.Vertices = append(*g.Vertices, *v)
 }
 
 func (d *Graph) Fmt() string {

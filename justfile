@@ -2,12 +2,13 @@ fmt:
   gofmt -w -s .
 
 test: fmt
-  go test -vet=all -tags debug -v ./...
+  DEBUG=1 go test -vet=all -tags debug -v ./...
 
 reltest: fmt
   go test -vet=all  ./...
 
 build: test
+  env DEBUG=1 
   go build -tags debug -o zt zt.go
 
 relbuild: test

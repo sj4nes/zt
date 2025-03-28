@@ -13,12 +13,31 @@ func TestZeroGraph(t *testing.T) {
 }
 
 func TestGraphToYAML(t *testing.T) {
-	g := &Graph{}
+	g := NewGraph()
 	y, err := g.ToYAML()
 	if err != nil {
 		t.Errorf("unexpected error: %v", err)
 	}
-	if string(y) != "value: null\nvertices: null\nedges: null\n" {
+	if string(y) != "id: \"16_1\"\nvalue: null\nvertices: null\nedges: null\n" {
 		t.Errorf("unexpected yaml: %v", string(y))
+	}
+}
+
+func TestGraphFmt(t *testing.T) {
+	g := NewGraph()
+	if g.Fmt() != " TODO" {
+		t.Errorf("unexpected fmt: %v", g.Fmt())
+	}
+}
+
+func TestGraphAddVertex(t *testing.T) {
+	g := NewGraph()
+	v := NewVertex()
+	g.AddVertex(v)
+	if g.Vertices != nil && len(*g.Vertices) != 1 {
+		t.Errorf("expected 1 vertex, got %v", len(*g.Vertices))
+	}
+	if g.Vertices != nil && (*g.Vertices)[0] != *v {
+		t.Errorf("unexpected vertex: %v", (*g.Vertices)[0])
 	}
 }
