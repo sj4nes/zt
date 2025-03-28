@@ -18,3 +18,6 @@ run: fmt
 
 wat:
   watchexec -e go -r just test
+ 
+relwat:
+  watchexec -e go -r just reltest
