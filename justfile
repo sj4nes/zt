@@ -8,13 +8,15 @@ reltest: fmt
   go test -vet=all  ./...
 
 build: test
-  env DEBUG=1 
   go build -tags debug -o zt zt.go
 
 relbuild: test
   go build -o zt zt.go
 
 run: fmt
+  DEBUG=1 go run zt.go
+
+relrun: fmt
   go run zt.go
 
 wat:
