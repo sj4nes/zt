@@ -106,6 +106,14 @@ type Rel struct {
 type Rels []Rel
 
 type Vertices []Vertex
+
+func (v *Vertices) Add(vs ...Vertex) {
+	*v = append(*v, vs...)
+}
+func (v *Vertices) Len() int {
+	return len(*v)
+}
+
 type Edges []Edge
 
 type Graph struct {

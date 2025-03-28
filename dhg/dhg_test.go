@@ -1,7 +1,7 @@
 package dhg
 
 import "testing"
-import "fmt"
+import "github.com/gkampitakis/go-snaps/snaps"
 
 func TestZeroGraph(t *testing.T) {
 	g := &Graph{}
@@ -19,17 +19,7 @@ func TestGraphToYAML(t *testing.T) {
 	if err != nil {
 		t.Errorf("unexpected error: %v", err)
 	}
-	expected := fmt.Sprintf(
-		`id: "16_1"
-vertices:
-- id: "16_2"
-- id: "16_3"
-- id: "16_4"
-`)
-
-	if string(y) != expected {
-		t.Errorf("unexpected yaml: \n%v\nvs:\n%v", string(y), expected)
-	}
+	snaps.MatchSnapshot(t, y)
 }
 
 func TestGraphFmt(t *testing.T) {
@@ -56,7 +46,7 @@ func TestGraphAddVertex(t *testing.T) {
 	g.AddVertex(v)
 	g.AddVertex(v)
 	g.AddVertex(v)
-	if g.Vertices != nil && len(*g.Vertices) != 1 {
+	if g.Vertices != nil && g.Vertices.Len() != 3 {
 		t.Errorf("expected 1 vertex, got %v", len(*g.Vertices))
 	}
 	if g.Vertices != nil && (*g.Vertices)[0] != *v {
