@@ -1,6 +1,7 @@
 package dhg
 
 import "testing"
+import "fmt"
 
 func TestZeroGraph(t *testing.T) {
 	g := &Graph{}
@@ -13,13 +14,21 @@ func TestZeroGraph(t *testing.T) {
 }
 
 func TestGraphToYAML(t *testing.T) {
-	g := NewGraph()
+	g := graphFixture()
 	y, err := g.ToYAML()
 	if err != nil {
 		t.Errorf("unexpected error: %v", err)
 	}
-	if string(y) != "id: \"16_1\"\nvalue: null\nvertices: null\nedges: null\n" {
-		t.Errorf("unexpected yaml: %v", string(y))
+	expected := fmt.Sprintf(
+		`id: "16_1"
+vertices:
+- id: "16_2"
+- id: "16_3"
+- id: "16_4"
+`)
+
+	if string(y) != expected {
+		t.Errorf("unexpected yaml: \n%v\nvs:\n%v", string(y), expected)
 	}
 }
 
@@ -30,9 +39,22 @@ func TestGraphFmt(t *testing.T) {
 	}
 }
 
+func graphFixture() *Graph {
+	g := NewGraph()
+	v1 := NewVertex()
+	v2 := NewVertex()
+	v3 := NewVertex()
+	g.AddVertex(v1)
+	g.AddVertex(v2)
+	g.AddVertex(v3)
+	return g
+}
+
 func TestGraphAddVertex(t *testing.T) {
 	g := NewGraph()
 	v := NewVertex()
+	g.AddVertex(v)
+	g.AddVertex(v)
 	g.AddVertex(v)
 	if g.Vertices != nil && len(*g.Vertices) != 1 {
 		t.Errorf("expected 1 vertex, got %v", len(*g.Vertices))

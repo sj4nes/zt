@@ -76,8 +76,8 @@ type Element interface {
 
 type Edge struct {
 	Id    string    `yaml:"id"`
-	Value *Datum    `yaml:"value"`
-	Rels  *Vertices `yaml:"rels"`
+	Value *Datum    `yaml:"value,omitempty"`
+	Rels  *Vertices `yaml:"rels,omitempty"`
 }
 
 func NewEdge() *Edge {
@@ -88,8 +88,8 @@ func (*Edge) element() {}
 
 type Vertex struct {
 	Id    string `yaml:"id"`
-	Value *Datum `yaml:"value"`
-	Rels  *Edges `yaml:"rels"`
+	Value *Datum `yaml:"value,omitempty"`
+	Rels  *Edges `yaml:"rels,omitempty"`
 }
 
 func NewVertex() *Vertex {
@@ -99,8 +99,8 @@ func NewVertex() *Vertex {
 func (*Vertex) element() {}
 
 type Rel struct {
-	Head *Element `yaml:"head"`
-	Tail *Element `yaml:"tail"`
+	Head *Element `yaml:"head,omitempty"`
+	Tail *Element `yaml:"tail,omitempty"`
 }
 
 type Rels []Rel
@@ -110,9 +110,9 @@ type Edges []Edge
 
 type Graph struct {
 	Id       string    `yaml:"id"`
-	Value    *Datum    `yaml:"value"`
-	Vertices *Vertices `yaml:"vertices"`
-	Edges    *Edges    `yaml:"edges"`
+	Value    *Datum    `yaml:"value,omitempty"`
+	Vertices *Vertices `yaml:"vertices,omitempty"`
+	Edges    *Edges    `yaml:"edges,omitempty"`
 }
 
 func NewGraph() *Graph {
@@ -123,7 +123,7 @@ func (g Graph) ToYAML() ([]byte, error) {
 	return yaml.Marshal(g)
 }
 
-func (g Graph) AddVertex(v *Vertex) {
+func (g *Graph) AddVertex(v *Vertex) {
 	if g.Vertices == nil {
 		g.Vertices = &Vertices{}
 	}
