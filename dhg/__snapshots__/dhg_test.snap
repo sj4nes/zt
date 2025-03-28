@@ -2,9 +2,12 @@
 [TestGraphToYAML - 1]
 id: "16_1"
 vertices:
-- id: "16_2"
-- id: "16_3"
-- id: "16_4"
+  "16_2":
+    id: "16_2"
+  "16_3":
+    id: "16_3"
+  "16_4":
+    id: "16_4"
 edges:
 - id: "16_5"
 - id: "16_6"
@@ -13,14 +16,17 @@ edges:
 ---
 
 [TestGraphSaveYAML - 1]
-id: 16_b
+id: 16_d
 vertices:
-- id: 16_c
-- id: 16_d
-- id: 16_e
+  16_e:
+    id: 16_e
+  16_f:
+    id: 16_f
+  16_g:
+    id: 16_g
 edges:
-- id: 16_f
-- id: 16_g
 - id: 16_h
+- id: 16_i
+- id: 16_j
 
 ---

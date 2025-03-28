@@ -1,4 +1,6 @@
 // Package dhg provides a directed hypergraph implementation.
+// It includes data structures for vertices, edges, and graphs, as well as
+// methods for creating, manipulating, and serializing these structures.
 package dhg
 
 import (
@@ -38,27 +40,30 @@ const (
 	VERTEX_SYMBOL      = "\U000f15dc" // 󱗜 (a point in an area) = {(󰴷,󰴶)} ?
 )
 
-var LAST_ID_MX sync.Mutex
-var LAST_SERIAL_ID int64 = 0
-var RNGSRC *rand.Rand
+// These are "private" globals that support NextId().
+var pLAST_ID_MX sync.Mutex
+var pLAST_SERIAL_ID int64 = 0
+var pRNGSRC *rand.Rand
 
+// init initializes the random number generator with a seed based on the
+// current time or 42 during debugging/testing.
 func init() {
-	RNGSRC = rand.New(rand.NewSource(time.Now().UnixNano()))
+	pRNGSRC = rand.New(rand.NewSource(time.Now().UnixNano()))
 	if os.Getenv("DEBUG") == "1" {
-		RNGSRC = rand.New(rand.NewSource(42))
-		x := RNGSRC.Intn(30)
+		pRNGSRC = rand.New(rand.NewSource(42))
+		x := pRNGSRC.Intn(30)
 		Assert(x == 5, "static random seed is not set correctly: "+strconv.Itoa(x))
 	}
 }
 
 // NextId generates a new unique ID for graph elements.
 func NextId() string {
-	LAST_ID_MX.Lock()
-	defer LAST_ID_MX.Unlock()
-	LAST_SERIAL_ID++
-	conv := strconv.FormatInt(LAST_SERIAL_ID, 36)
+	pLAST_ID_MX.Lock()
+	defer pLAST_ID_MX.Unlock()
+	pLAST_SERIAL_ID++
+	conv := strconv.FormatInt(pLAST_SERIAL_ID, 36)
 	// Randomize part of the id to avoid collisions
-	r := RNGSRC.Intn(1e9)
+	r := pRNGSRC.Intn(1e9)
 	if os.Getenv("DEBUG") == "1" {
 		r = 42 // For testing
 	}
@@ -108,32 +113,42 @@ type Rel struct {
 
 type Rels []Rel
 
-type Vertices []Vertex
+type Vertices map[string]Vertex
 
+// NewVertices creates a new Vertices collection.
 func NewVertices() *Vertices {
-	v := Vertices{}
+	v := make(Vertices)
 	return &v
+
 }
 
+// Add adds vertices to the collection.
 func (v *Vertices) Add(vs ...Vertex) {
-	*v = append(*v, vs...)
+	for _, vertex := range vs {
+		(*v)[vertex.Id] = vertex
+	}
 }
 
+// Len returns the number of vertices in the collection.
 func (v *Vertices) Len() int {
 	return len(*v)
 }
 
+// Edges is a collection of edges.
 type Edges []Edge
 
+// NewEdges creates a new Edges collection.
 func NewEdges() *Edges {
 	v := Edges{}
 	return &v
 }
 
+// Add adds edges to the collection.
 func (e *Edges) Add(es ...Edge) {
 	*e = append(*e, es...)
 }
 
+// Len returns the number of edges in the collection.
 func (e *Edges) Len() int {
 	return len(*e)
 }
@@ -149,6 +164,7 @@ func NewGraph() *Graph {
 	return &Graph{Id: NextId()}
 }
 
+// ToYAML serializes the graph to YAML format.
 func (g Graph) ToYAML() ([]byte, error) {
 	return yaml.Marshal(g)
 }
@@ -167,8 +183,13 @@ func (g *Graph) AddEdge(e *Edge) {
 	g.Edges.Add(*e)
 }
 
+// idFmt formats the ID of a graph element for display. Used for graphs, vertices, and edges.
+func idFmt(id string) string {
+	return "(" + id + ")"
+}
+
 func (d *Graph) Fmt() string {
-	return GRAPH_SYMBOL + " " + "TODO"
+	return GRAPH_SYMBOL + " " + "TODO" + " " + idFmt(d.Id)
 }
 
 type Datum interface {
@@ -180,6 +201,7 @@ type GraphDatum struct {
 	Value *Graph
 }
 
+//go:noinline
 func (*GraphDatum) datum() {}
 
 func (d *GraphDatum) Fmt() string {
@@ -191,7 +213,9 @@ func (d *GraphDatum) Fmt() string {
 
 type NilDatum struct{}
 
+//go:noinline
 func (*NilDatum) datum() {}
+
 func (*NilDatum) Fmt() string {
 	return NO_DATA_SYMBOL
 }
@@ -200,6 +224,7 @@ type BoolDatum struct {
 	Value bool
 }
 
+//go:noinline
 func (*BoolDatum) datum() {}
 
 func (d *BoolDatum) Fmt() string {
@@ -213,6 +238,7 @@ type IntegerDatum struct {
 	Value int64
 }
 
+//go:noinline
 func (*IntegerDatum) datum() {}
 
 func (d *IntegerDatum) Fmt() string {
@@ -223,6 +249,7 @@ type FloatDatum struct {
 	Value float64
 }
 
+//go:noinline
 func (*FloatDatum) datum() {}
 
 func (d *FloatDatum) Fmt() string {
@@ -233,6 +260,7 @@ type StringDatum struct {
 	Value string
 }
 
+//go:noinline
 func (*StringDatum) datum() {}
 
 func (d *StringDatum) Fmt() string {
@@ -243,6 +271,7 @@ type VertexDatum struct {
 	Value *Vertex
 }
 
+//go:noinline
 func (*VertexDatum) datum() {}
 
 func (*VertexDatum) Fmt() string {
@@ -253,11 +282,26 @@ type EdgeDatum struct {
 	Value *Edge
 }
 
+//go:noinline
 func (*EdgeDatum) datum() {}
 
 func (*EdgeDatum) Fmt() string {
 	return EDGE_SYMBOL + " " + "TODO"
 }
+
+type RuneDatum struct {
+	Value rune
+}
+
+//go:noinline
+func (*RuneDatum) datum() {}
+
+type TimestampDatum struct {
+	Value time.Time
+}
+
+//go:noinline
+func (*TimestampDatum) datum() {}
 
 // Fmt returns a formatted string for the provided datum. Probably a ridululous
 // generic since there is already an interface. :)
@@ -265,6 +309,7 @@ func Fmt[T Datum](d T) string {
 	return d.Fmt()
 }
 
+// SaveYAML saves the graph to a YAML file.
 func (g *Graph) SaveYAML(filename string) error {
 	data, err := g.ToYAML()
 	if err != nil {
@@ -277,6 +322,7 @@ func (g *Graph) SaveYAML(filename string) error {
 	return nil
 }
 
+// LoadGraphYAML loads a graph from a YAML file.
 func LoadGraphYAML(filename string) (*Graph, error) {
 	y, err := ioutil.ReadFile(filename)
 	if err != nil {

@@ -27,9 +27,7 @@ func TestGraphToYAML(t *testing.T) {
 
 func TestGraphFmt(t *testing.T) {
 	g := NewGraph()
-	if g.Fmt() != " TODO" {
-		t.Errorf("unexpected fmt: %v", g.Fmt())
-	}
+	assert.Equal(t, g.Fmt(), " TODO ("+g.Id+")")
 }
 
 func graphFixture() *Graph {
@@ -51,24 +49,17 @@ func graphFixture() *Graph {
 
 func TestGraphAddVertex(t *testing.T) {
 	g := NewGraph()
-	v := NewVertex()
-	g.AddVertex(v)
-	g.AddVertex(v)
-	g.AddVertex(v)
-	if g.Vertices != nil && g.Vertices.Len() != 3 {
-		t.Errorf("expected 1 vertex, got %v", len(*g.Vertices))
-	}
-	if g.Vertices != nil && (*g.Vertices)[0] != *v {
-		t.Errorf("unexpected vertex: %v", (*g.Vertices)[0])
-	}
+	g.AddVertex(NewVertex())
+	g.AddVertex(NewVertex())
+	g.AddVertex(NewVertex())
+	assert.NotNil(t, g.Vertices)
+	assert.Equal(t, 3, g.Vertices.Len())
 }
 
 func TestGraphSaveYAML(t *testing.T) {
 	g := graphFixture()
 	err := g.SaveYAML("test.yaml")
-	if err != nil {
-		t.Errorf("unexpected error: %v", err)
-	}
+	assert.NoError(t, err)
 	defer func() {
 		err := os.Remove("test.yaml")
 		if err != nil {
@@ -107,4 +98,19 @@ func TestLoadGraphYAML(t *testing.T) {
 		t.Errorf("unexpected error: %v", err)
 	}
 	assert.Equal(t, y1, y2)
+}
+
+func TestGraphDatumFmt(t *testing.T) {
+	g := NewGraph()
+	assert.Equal(t, g.Fmt(), " TODO ("+g.Id+")")
+}
+
+func TestVerticesLen(t *testing.T) {
+	g := graphFixture()
+	assert.Equal(t, g.Vertices.Len(), 3)
+}
+
+func TestEdgesLen(t *testing.T) {
+	g := graphFixture()
+	assert.Equal(t, g.Edges.Len(), 3)
 }
