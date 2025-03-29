@@ -4,7 +4,8 @@
 package dhg
 
 import (
-	"gopkg.in/yaml.v2"
+	"fmt"
+	"gopkg.in/yaml.v3"
 	"io/ioutil"
 	"math/rand"
 	"os"
@@ -135,17 +136,19 @@ func (v *Vertices) Len() int {
 }
 
 // Edges is a collection of edges.
-type Edges []Edge
+type Edges map[string]Edge
 
 // NewEdges creates a new Edges collection.
 func NewEdges() *Edges {
-	v := Edges{}
+	v := make(Edges)
 	return &v
 }
 
 // Add adds edges to the collection.
 func (e *Edges) Add(es ...Edge) {
-	*e = append(*e, es...)
+	for _, edge := range es {
+		(*e)[edge.Id] = edge
+	}
 }
 
 // Len returns the number of edges in the collection.
@@ -154,14 +157,21 @@ func (e *Edges) Len() int {
 }
 
 type Graph struct {
-	Id       string    `yaml:"id"`
-	Value    *Datum    `yaml:"value,omitempty"`
-	Vertices *Vertices `yaml:"vertices,omitempty"`
-	Edges    *Edges    `yaml:"edges,omitempty"`
+	Id          string    `yaml:"id"`
+	Vertices    *Vertices `yaml:"vertices,omitempty"`
+	Edges       *Edges    `yaml:"edges,omitempty"`
+	StringDatum `yaml:"dstr,omitempty"`
 }
 
 func NewGraph() *Graph {
-	return &Graph{Id: NextId()}
+	g := &Graph{Id: NextId()}
+	label := NewStringDatum("TODO")
+	g.Set(label)
+	return g
+}
+
+func (g *Graph) Set(v StringDatum) {
+	g.DStr = v.DStr
 }
 
 // ToYAML serializes the graph to YAML format.
@@ -189,7 +199,7 @@ func idFmt(id string) string {
 }
 
 func (d *Graph) Fmt() string {
-	return GRAPH_SYMBOL + " " + "TODO" + " " + idFmt(d.Id)
+	return fmt.Sprintf("%s %s %s", GRAPH_SYMBOL, d.DStr, idFmt(d.Id))
 }
 
 type Datum interface {
@@ -198,20 +208,22 @@ type Datum interface {
 }
 
 type GraphDatum struct {
-	Value *Graph
+	DGraph *Graph `yaml:"graph,omitempty"`
 }
 
 //go:noinline
-func (*GraphDatum) datum() {}
+func (GraphDatum) datum() {}
 
 func (d *GraphDatum) Fmt() string {
-	if d.Value == nil {
+	if d.DGraph == nil {
 		return EMPTY_GRAPH_SYMBOL
 	}
-	return d.Value.Fmt()
+	return d.DGraph.Fmt()
 }
 
-type NilDatum struct{}
+type NilDatum struct {
+	DNil bool `yaml:"nil" default:"true"`
+}
 
 //go:noinline
 func (*NilDatum) datum() {}
@@ -221,54 +233,58 @@ func (*NilDatum) Fmt() string {
 }
 
 type BoolDatum struct {
-	Value bool
+	DBool bool `yaml:"bool" default:"false"`
 }
 
 //go:noinline
 func (*BoolDatum) datum() {}
 
 func (d *BoolDatum) Fmt() string {
-	if d.Value {
+	if d.DBool {
 		return BOOLEAN_SYMBOL + "true"
 	}
 	return BOOLEAN_SYMBOL + "false"
 }
 
 type IntegerDatum struct {
-	Value int64
+	DInt int64
 }
 
 //go:noinline
 func (*IntegerDatum) datum() {}
 
 func (d *IntegerDatum) Fmt() string {
-	return INTEGER_SYMBOL + " " + strconv.FormatInt(d.Value, 10)
+	return INTEGER_SYMBOL + " " + strconv.FormatInt(d.DInt, 10)
 }
 
 type FloatDatum struct {
-	Value float64
+	DFloat float64
 }
 
 //go:noinline
 func (*FloatDatum) datum() {}
 
 func (d *FloatDatum) Fmt() string {
-	return REAL_SYMBOL + " " + strconv.FormatFloat(d.Value, 'f', -1, 64)
+	return REAL_SYMBOL + " " + strconv.FormatFloat(d.DFloat, 'f', -1, 64)
 }
 
 type StringDatum struct {
-	Value string
+	DStr string `yaml:"dstr"`
+}
+
+func NewStringDatum(value string) StringDatum {
+	return StringDatum{DStr: value}
 }
 
 //go:noinline
 func (*StringDatum) datum() {}
 
-func (d *StringDatum) Fmt() string {
-	return STRING_SYMBOL + " " + d.Value
+func (d StringDatum) Fmt() string {
+	return STRING_SYMBOL + " " + d.DStr
 }
 
 type VertexDatum struct {
-	Value *Vertex
+	DVertex *Vertex
 }
 
 //go:noinline
@@ -279,7 +295,7 @@ func (*VertexDatum) Fmt() string {
 }
 
 type EdgeDatum struct {
-	Value *Edge
+	DEdge *Edge
 }
 
 //go:noinline
@@ -290,6 +306,7 @@ func (*EdgeDatum) Fmt() string {
 }
 
 type RuneDatum struct {
+	Type  string `yaml:"type" default:"rune"`
 	Value rune
 }
 
@@ -297,6 +314,7 @@ type RuneDatum struct {
 func (*RuneDatum) datum() {}
 
 type TimestampDatum struct {
+	Type  string `yaml:"type" default:"string"`
 	Value time.Time
 }
 

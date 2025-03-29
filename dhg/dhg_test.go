@@ -19,9 +19,7 @@ func TestZeroGraph(t *testing.T) {
 func TestGraphToYAML(t *testing.T) {
 	g := graphFixture()
 	y, err := g.ToYAML()
-	if err != nil {
-		t.Errorf("unexpected error: %v", err)
-	}
+	assert.NoError(t, err)
 	snaps.MatchYAML(t, y)
 }
 
@@ -32,26 +30,18 @@ func TestGraphFmt(t *testing.T) {
 
 func graphFixture() *Graph {
 	g := NewGraph()
-	v1 := NewVertex()
-	v2 := NewVertex()
-	v3 := NewVertex()
-	g.AddVertex(v1)
-	g.AddVertex(v2)
-	g.AddVertex(v3)
-	e1 := NewEdge()
-	e2 := NewEdge()
-	e3 := NewEdge()
-	g.AddEdge(e1)
-	g.AddEdge(e2)
-	g.AddEdge(e3)
+	for i := 0; i < 3; i++ {
+		g.AddVertex(NewVertex())
+		g.AddEdge(NewEdge())
+	}
 	return g
 }
 
 func TestGraphAddVertex(t *testing.T) {
 	g := NewGraph()
-	g.AddVertex(NewVertex())
-	g.AddVertex(NewVertex())
-	g.AddVertex(NewVertex())
+	for i := 0; i < 3; i++ {
+		g.AddVertex(NewVertex())
+	}
 	assert.NotNil(t, g.Vertices)
 	assert.Equal(t, 3, g.Vertices.Len())
 }
